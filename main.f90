@@ -4,8 +4,8 @@ program galaxy
 
   double precision,parameter :: tend = 10e3
   double precision,parameter :: yret = 0.1
-  double precision,parameter :: yz = 0.07
-  double precision,parameter :: ydust = 0.03
+  double precision,parameter :: yz = 0.099
+  double precision,parameter :: ydust = 0.001
   double precision :: tnow,dt
   double precision :: mgas,mstar,mz,mdust,mztot
   double precision :: zdust,zgas,ztot
@@ -60,7 +60,7 @@ program galaxy
      mztot = mz + mdust
      ztot = zgas+zdust
      tnow = tnow + dt
-     write(*,'(1(ES10.3,2X),4(F8.4,2X),2(ES9.2,2X))') tnow/1e3,ztot/0.0134,zgas/ztot,zdust/ztot,stardust/totdust,mz/grate,mdust/drate
+     write(*,'(1(ES10.3,2X),4(F9.5,2X),2(ES9.2,2X))') tnow/1e3,ztot/0.0134,zgas/ztot,zdust/ztot,stardust/totdust,mz/grate,mdust/drate
      if (tnow .ge. tend) exit
   end do
 
@@ -96,7 +96,7 @@ double precision function grow(zgas,zdust,mgas,sfr)
   amass = 12.*mp
   gtemp = 20.
   gdens = 100.
-  fdense = 0.03 * (sfr/2e6)
+  fdense = 0.015 !* (sfr/2e6)
 
   ! velocity/density of metals
   vel = sqrt(kb*gtemp/amass)
@@ -128,12 +128,14 @@ double precision function destroy(zgas,zdust,mgas,sfr)
   snrate = fsn*sfr
 
   ! dust mass shocked per sn
-  mshocked = 2.1e4 * zdust
-  mshocked = 4036 * zdust
+  mshocked = 1000 * zdust
+  mshocked = 8143 * zdust
+!  mshocked = 4036 * zdust
 
   ! destruction efficiency
-  fdest = 1. / (1. + zgas/(0.0134*0.05))
-  fdest = 1. / (1. + zgas/(0.0134*0.039))**(0.298)
+  fdest = 1.
+  fdest = 1. / (1. + zgas/(0.0134*0.14))
+!  fdest = 1. / (1. + zgas/(0.0134*0.039))**(0.298)
 
   ! dust mass destroyed per sn
   mdest = fdest * mshocked
@@ -176,5 +178,7 @@ double precision function gettimestep(sfr,drate,grate,mgas,mz,mdust)
   tgrow = mz/grate
 
   gettimestep = tol*min(tstar,tdest,tgrow)
+
+  if (isnan(gettimestep)) gettimestep = tol*tstar
 
 end function gettimestep
